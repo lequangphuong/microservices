@@ -1,0 +1,27 @@
+filebeat.modules:
+  - module: system
+    syslog:
+      enabled: true
+      var.paths: ["/var/log/syslog*"]
+  - module: system
+    auth:
+      enabled: true
+      var.paths: ["/var/log/auth.log*"]
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /usr/share/app/logs/*.log
+  stream: all # can be all, stdout or stderr
+
+# filebeat.autodiscover:
+#   providers:
+#     - type: docker
+#       hints.enabled: true
+
+output.logstash:
+  hosts: ["logstash:5044"]
+  
+setup.kibana:
+  host: "http://kibana:5601"
