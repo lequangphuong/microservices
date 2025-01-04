@@ -82,7 +82,7 @@ services:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     volumes:
-      - ./Services/00_kafka/broker-ui/config.yml:/etc/kafkaui/dynamic_config.yaml
+      - ./EventDriven/Kafka/broker-ui/config.yml:/etc/kafkaui/dynamic_config.yaml
     environment:
       DYNAMIC_CONFIG_ENABLED: 'true'
     depends_on:
@@ -108,7 +108,7 @@ services:
     ports:
       - 9181:9090
     volumes:
-      - ./Services/00_kafka/prometheus:/etc/prometheus
+      - ./Monitoring/prometheus:/etc/prometheus
       - prom_data:/prometheus
     networks:
       - kafka  
@@ -147,8 +147,8 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=grafana
     volumes:
-      - ./Services/00_kafka/grafana/provisioning:/etc/grafana/provisioning
-      - ./Services/00_kafka/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./Monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./Monitoring/grafana/dashboards:/var/lib/grafana/dashboards
     networks:
       - kafka
     healthcheck:
@@ -166,7 +166,7 @@ services:
       - "9300:9300"
     volumes:
       - elk_data:/usr/share/elasticsearch/data/
-      - ./Monitoring/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./Logging/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     environment:
       - discovery.type=single-node
       - http.host=0.0.0.0
@@ -185,8 +185,8 @@ services:
       - "5044:5044"
       - "9600:9600"
     volumes:
-      - ./Monitoring/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./Monitoring/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./Logging/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./Logging/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
       - ls_data:/usr/share/logstash/data
     networks:
       - elk
@@ -199,7 +199,7 @@ services:
     ports:
       - "5601:5601"
     volumes:
-      - ./Monitoring/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ./Logging/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
       - kb_data:/usr/share/kibana/data
     networks:
       - elk
@@ -213,7 +213,7 @@ services:
     command: ["filebeat", "-e", "--strict.perms=false"]
     volumes:
       - filebeat:/usr/share/filebeat/data
-      - ./Monitoring/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./Logging/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/log/syslog:/var/log/syslog:ro
@@ -228,7 +228,7 @@ services:
     image: gateway:1.0
     container_name: gateway
     build:
-      context: ./Services/01_gateway
+      context: ./Services/gateway
       dockerfile: Dockerfile
     environment:
       NODE_ENV: "development"
@@ -245,7 +245,7 @@ services:
     image: msservice_1:1.0
     # container_name: msservice_1
     build:
-      context: ./Services/02_service
+      context: ./Services/service01
       dockerfile: Dockerfile
     environment:
       NODE_ENV: "development"
@@ -259,8 +259,8 @@ services:
       - kafka
     depends_on:
       - database
-    deploy:
-      replicas: 3
+    # deploy:
+    #   replicas: 3
     # volumes:
     #   - service1_data:/msservice_1
 
