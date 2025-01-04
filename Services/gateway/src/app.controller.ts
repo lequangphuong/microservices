@@ -85,7 +85,7 @@ export class AppController {
     this.client.subscribeToResponseOf('fibo');
     const kafka = new Kafka({
         clientId: 'app-gateway',
-        brokers: ['localhost:9092'],
+        brokers: ['broker-1:19092'],
     });
     this.admin = kafka.admin();
     await this.admin.connect();

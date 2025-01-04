@@ -18,7 +18,7 @@ import { LoggerModule } from 'logger/logger.module';
       options: {
         client: {
           clientId: 'app-gateway',
-          brokers: ['localhost:9092'],
+          brokers: ['broker-1:19092'],
         },
         consumer: {
           groupId: 'kafka-microservices',
