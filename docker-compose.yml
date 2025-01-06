@@ -82,7 +82,7 @@ services:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     volumes:
-      - ./EventDriven/Kafka/broker-ui/config.yml:/etc/kafkaui/dynamic_config.yaml
+      - ./MessageQueue/Kafka/broker-ui/config.yml:/etc/kafkaui/dynamic_config.yaml
     environment:
       DYNAMIC_CONFIG_ENABLED: 'true'
     depends_on:
@@ -224,6 +224,26 @@ services:
     depends_on:
       - elasticsearch
 
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    # volumes:
+    #   - /path/to/local/dаta:/root/redis
+    #   - /path/to/local/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=redis-password
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
+
   gateway:
     image: gateway:1.0
     container_name: gateway
@@ -240,6 +260,9 @@ services:
       - '8089:8089'
     volumes:
       - shared-volume:/usr/src/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
 
   msservice_1:
     image: msservice_1:1.0
@@ -316,6 +339,8 @@ volumes:
     driver: local
   filebeat:
     driver: local
+  # redis_data:
+  #   driver: local
   shared-volume:
 
   

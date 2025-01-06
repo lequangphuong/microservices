@@ -1,16 +1,18 @@
-import { Body, Controller, Get, Inject } from '@nestjs/common';
+import { Body, Controller, Get, Inject, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ClientKafka } from '@nestjs/microservices';
 import { Admin, CompressionTypes, Kafka } from 'kafkajs';
 import { AppLoggerService } from 'logger/logger.service';
+import { CacheInterceptor, CacheKey } from '@nestjs/cache-manager';
 
 @Controller()
+@UseInterceptors(CacheInterceptor)
 export class AppController {
   private admin: Admin;
 
   constructor(
-    @Inject('APP_GATEWAY') private client: ClientKafka, 
-  private readonly appService: AppService, private readonly logger: AppLoggerService) { }
+    @Inject('APP_GATEWAY') private client: ClientKafka,
+    private readonly appService: AppService, private readonly logger: AppLoggerService) { }
 
   @Get()
   getHello(): string {
@@ -18,6 +20,8 @@ export class AppController {
   }
 
   @Get('/fibonacci')
+  @CacheKey('fibo') // Controlling the key
+  // @CacheTTL(20) // Controling the duration
   async getFibo() {
     this.logger.log('debugging the log trace from ELK...', 'Gateway -> fibonacci');
     this.logger.warn('debugging the log trace from ELK...', 'Gateway -> fibonacci');
@@ -35,31 +39,6 @@ export class AppController {
 
   private getFiboResult() {
     return new Promise(async (resolve) => {
-      // const kafka = new Kafka({
-
-      //   brokers: ['broker-1:19092'],
-
-      // });
-      // const producer = kafka.producer();
-
-      // await producer.connect();
-      // console.log("Connected successfully");
-
-      // const result = await producer.send({
-      //   topic: 'fibo',
-      //   messages: [
-      //     {
-      //       value: JSON.stringify({ num: 40 })
-      //     },
-      //   ],
-      //   acks: 1,
-      //   compression: CompressionTypes.GZIP
-      // })
-      // await producer.disconnect();
-
-      // const consumer = kafka.consumer({top}) 
-      // resolve(result);
-
       this.client
         .send('fibo', JSON.stringify({ num: 40 }))
         .subscribe((result: number) => {
@@ -84,8 +63,8 @@ export class AppController {
     console.log('onModuleInit')
     this.client.subscribeToResponseOf('fibo');
     const kafka = new Kafka({
-        clientId: 'app-gateway',
-        brokers: ['broker-1:19092'],
+      clientId: 'app-gateway',
+      brokers: ['broker-1:19092'],
     });
     this.admin = kafka.admin();
     await this.admin.connect();

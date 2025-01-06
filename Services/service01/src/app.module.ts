@@ -10,7 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
   imports: [ConfigModule.forRoot({
     load: [databaseConfig],
     envFilePath: '.env',
-    isGlobal: true
+    // isGlobal: true
   }),
   // ThrottlerModule.forRoot({ throttlers: [{ limit: 10, ttl: 60 }] }),
   MongooseModule.forRootAsync({
