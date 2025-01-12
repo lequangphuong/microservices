@@ -2,17 +2,18 @@ import { Logger, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
 import databaseConfig, { CONFIG_DATABASE } from 'config/database.config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { LoggerModule } from 'logger/logger.module';
+
 
 @Module({
   imports: [ConfigModule.forRoot({
     load: [databaseConfig],
-    envFilePath: '.env',
+    envFilePath: `${process.cwd()}/config/env/${process.env.NODE_ENV}.env`
     // isGlobal: true
   }),
-  // ThrottlerModule.forRoot({ throttlers: [{ limit: 10, ttl: 60 }] }),
+  LoggerModule,
   MongooseModule.forRootAsync({
     imports: [ConfigModule],
     useFactory: async (configService: ConfigService) => {

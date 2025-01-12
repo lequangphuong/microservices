@@ -1,7 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { WinstonModule } from 'nest-winston';
-import { instance } from 'logger/winston.logger';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { v4 as uuidv4 } from 'uuid';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
@@ -13,7 +11,7 @@ async function bootstrap() {
     options: {
       client: {
         clientId: `consumer-${uuidv4()}`,
-        brokers: ['broker-1:19092'],
+        brokers: [process.env.BROKER_SERVER],
       },
       consumer: {
         groupId: 'consumer',
@@ -21,13 +19,7 @@ async function bootstrap() {
       producer: {
         createPartitioner: Partitioners.LegacyPartitioner
       }
-    },
-    logger:
-      process.env.NODE_ENV == 'development'
-        ? ['debug', 'error', 'log', 'warn']
-        : WinstonModule.createLogger({
-          instance: instance,
-        }),
+    }
   });
   
   app.useGlobalPipes(new ValidationPipe({}))

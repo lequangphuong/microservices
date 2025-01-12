@@ -4,6 +4,7 @@ import { ClientKafka } from '@nestjs/microservices';
 import { Admin, CompressionTypes, Kafka } from 'kafkajs';
 import { AppLoggerService } from 'logger/logger.service';
 import { CacheInterceptor, CacheKey } from '@nestjs/cache-manager';
+import { CONFIG_KAFKA } from 'config/kafka.config';
 
 @Controller()
 @UseInterceptors(CacheInterceptor)
@@ -11,7 +12,7 @@ export class AppController {
   private admin: Admin;
 
   constructor(
-    @Inject('APP_GATEWAY') private client: ClientKafka,
+    @Inject(CONFIG_KAFKA) private client: ClientKafka,
     private readonly appService: AppService, private readonly logger: AppLoggerService) { }
 
   @Get()
@@ -62,36 +63,37 @@ export class AppController {
   async onModuleInit() {
     console.log('onModuleInit')
     this.client.subscribeToResponseOf('fibo');
-    const kafka = new Kafka({
-      clientId: 'app-gateway',
-      brokers: ['broker-1:19092'],
-    });
-    this.admin = kafka.admin();
-    await this.admin.connect();
-    const topics = await this.admin.listTopics();
+    await this.client.connect();
+  //   const kafka = new Kafka({
+  //     clientId: 'app-gateway',
+  //     brokers: ['localhost:9092'],
+  //   });
+  //   this.admin = kafka.admin();
+  //   await this.admin.connect();
+  //   const topics = await this.admin.listTopics();
 
-    const topicList = [];
-    if (!topics.includes('fibo')) {
-      topicList.push({
-        topic: 'fibo',
-        numPartitions: 10,
-        replicationFactor: 1,
-      });
-    }
+  //   const topicList = [];
+  //   if (!topics.includes('fibo')) {
+  //     topicList.push({
+  //       topic: 'fibo',
+  //       numPartitions: 10,
+  //       replicationFactor: 1,
+  //     });
+  //   }
 
-    if (!topics.includes('fibo.reply')) {
-      topicList.push({
-        topic: 'fibo.reply',
-        numPartitions: 10,
-        replicationFactor: 1,
-      });
-    }
+  //   if (!topics.includes('fibo.reply')) {
+  //     topicList.push({
+  //       topic: 'fibo.reply',
+  //       numPartitions: 10,
+  //       replicationFactor: 1,
+  //     });
+  //   }
 
-    if (topicList.length) {
-      await this.admin.createTopics({
-        topics: topicList,
-      });
-    }
-    await this.admin.disconnect();
+  //   if (topicList.length) {
+  //     await this.admin.createTopics({
+  //       topics: topicList,
+  //     });
+  //   }
+  //   await this.admin.disconnect();
   }
 }

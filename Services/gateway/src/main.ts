@@ -3,20 +3,11 @@ import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import helmet from 'helmet';
 import * as compression from 'compression';
-import { WinstonModule } from 'nest-winston';
-import { instance } from 'logger/winston.logger';
+import { ConfigService } from '@nestjs/config';
 
-const PORT = process.env.PORT ?? 3000;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    // logger:
-    //   process.env.NODE_ENV == 'development'
-    //     ? ['debug', 'error', 'log', 'warn']
-    //     : WinstonModule.createLogger({
-    //       instance: instance,
-    //     }),
-  });
+  const app = await NestFactory.create(AppModule);
 
   app.enableCors({ origin: '*' });
   app.useGlobalPipes(new ValidationPipe({}))
@@ -24,8 +15,10 @@ async function bootstrap() {
   app.use(helmet())
   app.use(compression())
 
-  await app.listen(PORT), () => {
-    console.log(`🚀 Application running at port ${PORT}`)
+  const configService = app.get(ConfigService);
+
+  await app.listen(configService.get('PORT')), () => {
+    console.log(`🚀 Application running at port ${configService.get('PORT')}`)
   };
 }
 bootstrap();
